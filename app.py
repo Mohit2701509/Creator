@@ -448,4 +448,4 @@ else:
     render_dashboard(st.session_state.live_df)
     if not is_admin and follow_live and not st.session_state.live_df.empty:
         time.sleep(2)
-        st.rerun()
+        st.experimental_rerun()
