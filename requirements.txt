@@ -4,4 +4,3 @@ numpy
 matplotlib
 seaborn
 pyserial
-sqlite3
