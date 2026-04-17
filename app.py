@@ -92,6 +92,14 @@ def db_update_password(email, new_password):
     conn.commit()
     conn.close()
     return updated
+# --- NEW: ADMIN ONLY DELETE FUNCTION ---
+def db_delete_all_data():
+    conn = sqlite3.connect('bp_data.db')
+    c = conn.cursor()
+    c.execute("DELETE FROM readings")
+    conn.commit()
+    conn.close()
+    return True    
 
 # Initialize DB on startup
 init_db()
@@ -324,12 +332,27 @@ with tab_dash:
 with tab_db:
     st.header("📊 History Explorer")
     db_data = get_user_data(user_email, is_admin)
+    
     if not db_data.empty:
         st.dataframe(db_data)
         csv = db_data.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Download Data as CSV", data=csv, file_name=f"bp_history_{user_email}.csv", mime="text/csv")
+        
+        # ADMIN ONLY DELETE ACTION
+        if is_admin:
+            st.markdown("---")
+            # Define the column here to avoid NameError
+            col_del, _ = st.columns([1, 3]) 
+            with col_del:
+                with st.expander("⚠️ Admin: Danger Zone"):
+                    if st.button("🗑️ Purge All Historical Data"):
+                        db_delete_all_data()
+                        st.session_state.activity_log.append(f"🚨 {user_email} CLEARED DATABASE")
+                        st.success("Data Purged!")
+                        time.sleep(1)
+                        safe_rerun()
     else:
-        st.info("No monitoring records found.")
+        st.info("No records found.")
 
 # --- HARDWARE DATA FUNCTION ---
 def get_hardware_data(ser_connection):
